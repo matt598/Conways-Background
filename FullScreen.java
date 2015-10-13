@@ -1,31 +1,37 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.awt.event.*;
 import java.io.*;
-public class Life extends JFrame implements KeyListener, Runnable
+public class BetterLife extends JFrame implements KeyListener, Runnable
 {
     static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     static Thread bounceThread;
     boolean live=true;
-    boolean capture;
+    boolean die = true;
     static int cells [][];
     static int cellsToDie [][];
-    public Life()
+    int resoultion = 3; //change it to make it process faster
+    int speed;
+    public BetterLife()
     {
         Container mainWindow = getContentPane();
-        ColorPanel view = new ColorPanel(Color.WHITE);
+        ColorPanel view = new ColorPanel((new Color(144,0,48)));
         mainWindow.add(view);
         setSize(screenSize.width,screenSize.height);
         setVisible(true);
         addKeyListener(this);
-        cells = new int[screenSize.width][screenSize.height];
+        //resoultion 
+        resoultion = Integer.parseInt(JOptionPane.showInputDialog(null,"The resouliton how many pixels each cell takes up, \nplease note: if you want it to work just enter a regular number and move on, \nI'm too tired to make robust code at this point.",JOptionPane.INFORMATION_MESSAGE));
+        
+        cells = new int[screenSize.width/resoultion][screenSize.height/resoultion];
         cellsToDie = cells;
     }
 
     public static void main(String[] args) throws InterruptedException
     {
-        bounceThread = new Thread(new Life());
+        bounceThread = new Thread(new BetterLife());
         bounceThread.start();
     }
 
@@ -44,9 +50,9 @@ public class Life extends JFrame implements KeyListener, Runnable
             if(ycord > screenSize.height-1)
                 ycord = screenSize.height-1;
 
-            cells [xcord][ycord] = 1;
+            cells [xcord/resoultion][ycord/resoultion] = 1;
             counter++;
-            if(counter >1000)
+            if(counter >10 && die)
             {
                 counter = 0;
                 cells = cellsToDie;
@@ -64,9 +70,9 @@ public class Life extends JFrame implements KeyListener, Runnable
     public void killCells()
     {
         int numberOfNeighbors = 0;
-        for(int x = 1; x < screenSize.width-1; x++)
+        for(int x = 1; x < screenSize.width/resoultion-1; x++)
         {
-            for(int y = 1; y< screenSize.height-1; y++)
+            for(int y = 1; y< screenSize.height/resoultion-1; y++)
             {
                 numberOfNeighbors = 0;
                 if(cells[x+1][y] == 1)
@@ -103,7 +109,10 @@ public class Life extends JFrame implements KeyListener, Runnable
                 }
                 if(numberOfNeighbors < 2)
                 {
-                    cellsToDie[x][y] =2;
+                    if(cells[x][y]==1)
+                    {
+                        cellsToDie[x][y] =2;
+                    }
                 }
                 else if(numberOfNeighbors >3)
                 {
@@ -127,7 +136,7 @@ public class Life extends JFrame implements KeyListener, Runnable
         int c = e.getKeyCode();
         if(c == 29)
         {
-            live = false;
+            die = !die;
         }
         if(c == 76)
         {
@@ -157,19 +166,19 @@ public class Life extends JFrame implements KeyListener, Runnable
         public void paintComponent(Graphics g)
         {
             
-            for(int x = 0; x < screenSize.width; x++)
+            for(int x = 0; x < screenSize.width/resoultion; x++)
             {
-                for(int y = 0; y< screenSize.height; y++)
+                for(int y = 0; y< screenSize.height/resoultion; y++)
                 {
                     g.setColor(new Color(24,0,72));
                     if(cells[x][y] == 1)
                     {
-                        g.drawRect(x,y,1,1);
+                        g.fillRect(x*resoultion,y*resoultion,1*resoultion,1*resoultion);
                     }
                     g.setColor(new Color(144,0,48));
                     if(cells[x][y] ==2)
                     {
-                        g.drawRect(x,y,1,1);
+                        g.fillRect(x*resoultion,y*resoultion,1*resoultion,1*resoultion);
                     }
                 }
             }
