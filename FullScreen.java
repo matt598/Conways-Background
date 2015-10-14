@@ -13,7 +13,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
     static int cells [][];
     static int cellsToDie [][];
     int resoultion = 3; //change it to make it process faster
-    int speed;
+    int speed = 10;
     public BetterLife()
     {
         Container mainWindow = getContentPane();
@@ -23,8 +23,12 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
         setVisible(true);
         addKeyListener(this);
         //resoultion 
-        resoultion = Integer.parseInt(JOptionPane.showInputDialog(null,"The resouliton how many pixels each cell takes up, \nplease note: if you want it to work just enter a regular number and move on, \nI'm too tired to make robust code at this point.",JOptionPane.INFORMATION_MESSAGE));
-        
+        try{
+            resoultion = Integer.parseInt(JOptionPane.showInputDialog(null,"The resouliton how many pixels each cell takes up, \nplease note: if you want it to work just enter a regular number and move on.",JOptionPane.INFORMATION_MESSAGE));
+        }catch (Exception e) {resoultion = 3;}
+        try{
+            speed = Integer.parseInt(JOptionPane.showInputDialog(null,"The speed how many pixels refresh cell takes up, \nplease note: if you want it to work just enter a regular number, and move on.\n(one and above)",JOptionPane.INFORMATION_MESSAGE));
+        }catch (Exception e) {speed = 5;}
         cells = new int[screenSize.width/resoultion][screenSize.height/resoultion];
         cellsToDie = cells;
     }
@@ -52,7 +56,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 
             cells [xcord/resoultion][ycord/resoultion] = 1;
             counter++;
-            if(counter >10 && die)
+            if(counter >speed && die)
             {
                 counter = 0;
                 cells = cellsToDie;
@@ -128,7 +132,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
                 }
             }
         }
-        
+
     }
 
     public void keyPressed( KeyEvent e)
@@ -165,7 +169,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 
         public void paintComponent(Graphics g)
         {
-            
+
             for(int x = 0; x < screenSize.width/resoultion; x++)
             {
                 for(int y = 0; y< screenSize.height/resoultion; y++)
