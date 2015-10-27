@@ -8,14 +8,13 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 {
     static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     static Thread bounceThread;
-    boolean live=true, die = false, notClicking = true;
+    boolean live=true, die = false, notClicking = true, isStupid = true;
     static int cells [][];
     static int cellsToDie [][];
     int resoultion = 3, speed = 10, shape = 0;
     int rgbValues [][] = new int [3][2];
     public BetterLife()
     {
-        boolean isStupid =true;
         setCellSize();
         setTurnSpeed();
         resetCellColor();
@@ -45,23 +44,12 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
     public void run()
 
     {
-        int xcord=0;
-        int ycord=0;
         int counter = 0;
         while(live)
         {
             if(notClicking)
             {
-                xcord = MouseInfo.getPointerInfo().getLocation().x;
-                ycord = MouseInfo.getPointerInfo().getLocation().y;
-                if( xcord> screenSize.width-1 )
-                    xcord = screenSize.width-1;
-                if(ycord > screenSize.height-1)
-                    ycord = screenSize.height-1;
-
-                try{
-                    cells [xcord/resoultion][ycord/resoultion] = 1;
-                }catch(Exception e){cells [0][0] = 1;}
+                makeCellUnderMouseAlive();
             }
             counter++;
             if(counter >speed && die)
@@ -79,149 +67,59 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
         System.exit(0);
     }
 
+    public void makeCellUnderMouseAlive()
+    {
+        int xcord=0;
+        int ycord=0;
+        xcord = MouseInfo.getPointerInfo().getLocation().x;
+        ycord = MouseInfo.getPointerInfo().getLocation().y;
+        if( xcord> screenSize.width-1 )
+            xcord = screenSize.width-1;
+        if(ycord > screenSize.height-1)
+            ycord = screenSize.height-1;
+
+        try{
+            cells [xcord/resoultion][ycord/resoultion] = 1;
+        }catch(Exception e){cells [0][0] = 1;}
+    }
+
     public void killCells()
     {
         int numberOfNeighbors = 0;
-        //checks top corner
-        if(cells[1][0] == 1)
+        for(int x = 0; x < screenSize.width/resoultion; x++)
         {
-            numberOfNeighbors++;
-        }
-        if(cells[0][1] == 1)
-        {
-            numberOfNeighbors++;
-        }
-        if(numberOfNeighbors < 2)
-        {
-            if(cells[0][0]==1)
-            {
-                cellsToDie[0][0] =2;
-            }
-        }
-        else if(numberOfNeighbors == 2)
-        {    
-            cellsToDie[0][0] =cells[0][0];
-        }
-        for(int x = 1; x < screenSize.width/resoultion-1; x++)//checks top
-        {
-            numberOfNeighbors = 0;
-            if(cells[x+1][0] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[x+1][1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[x-1][0] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[x-1][1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[x][1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(numberOfNeighbors < 2)
-            {
-                if(cells[x][0]==1)
-                {
-                    cellsToDie[x][0] =2;
-                }
-            }
-            else if(numberOfNeighbors >3)
-            {
-                cellsToDie[x][0] =2;
-            }
-            else if(numberOfNeighbors == 3)
-            {    
-                cellsToDie[x][0] =1;
-            }
-            else if(numberOfNeighbors == 2)
-            {    
-                cellsToDie[x][0] =cells[x][0];
-            }
-        }
-        for(int y = 1; y< screenSize.height/resoultion-1; y++)//checks left side
-        {
-            numberOfNeighbors = 0;
-            if(cells[1][y] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[1][y-1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[1][y+1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[0][y+1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(cells[0][y-1] == 1)
-            {
-                numberOfNeighbors++;
-            }
-            if(numberOfNeighbors < 2)
-            {
-                if(cells[0][y]==1)
-                {
-                    cellsToDie[0][y] =2;
-                }
-            }
-            else if(numberOfNeighbors >3)
-            {
-                cellsToDie[0][y] =2;
-            }
-            else if(numberOfNeighbors == 3)
-            {    
-                cellsToDie[0][y] =1;
-            }
-            else if(numberOfNeighbors == 2)
-            {    
-                cellsToDie[0][y] =cells[0][y];
-            }
-        }
-        for(int x = 1; x < screenSize.width/resoultion-1; x++)
-        {
-            for(int y = 1; y< screenSize.height/resoultion-1; y++)
+            for(int y = 0; y< screenSize.height/resoultion; y++)
             {
                 numberOfNeighbors = 0;
-                if(cells[x+1][y] == 1)
+                if(x > 0 && cells[x-1][y] == 1 )
                 {
                     numberOfNeighbors++;
                 }
-                if(cells[x+1][y-1] == 1)
+                if(x > 0 && y < screenSize.height/resoultion -1 && cells[x-1][y+1] == 1)
                 {
                     numberOfNeighbors++;
                 }
-                if(cells[x+1][y+1] == 1)
+                if(x > 0 && y  > 0 && cells[x-1][y-1] == 1)
                 {
                     numberOfNeighbors++;
                 }
-                if(cells[x-1][y] == 1)
+                if(x < screenSize.width/resoultion-1 && y  > 0 && cells[x+1][y-1] == 1)
                 {
                     numberOfNeighbors++;
                 }
-                if(cells[x-1][y-1] == 1)
+                if(x < screenSize.width/resoultion-1 && cells[x+1][y] == 1)
                 {
                     numberOfNeighbors++;
                 }
-                if(cells[x-1][y+1] == 1)
+                try{if(x < screenSize.width/resoultion -1 && y  < screenSize.height/resoultion-1 && cells[x+1][y+1] == 1)
+                    {
+                        numberOfNeighbors++;
+                    }}catch(Exception E) {System.out.println(x + ", " + y);}
+                if(y  < screenSize.height/resoultion-1 && cells[x][y+1] == 1)
                 {
                     numberOfNeighbors++;
                 }
-                if(cells[x][y+1] == 1)
-                {
-                    numberOfNeighbors++;
-                }
-                if(cells[x][y-1] == 1)
+                if(y  > 0 && cells[x][y-1] == 1)
                 {
                     numberOfNeighbors++;
                 }
@@ -271,7 +169,6 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 
     public void setCellSize()
     {
-        boolean isStupid;
         do{
             try{
                 if(resoultion < 1)
@@ -293,16 +190,15 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 
     public void setTurnSpeed()
     {
-        boolean isStupid;
         do{
             try{
                 if(speed < 1)
                 {
-                    speed = Integer.parseInt(JOptionPane.showInputDialog(null,"The speed how long pixels take to refresh, \nYou must enter a number that is AT LEAST 1",JOptionPane.INFORMATION_MESSAGE));
+                    speed = 2*Integer.parseInt(JOptionPane.showInputDialog(null,"The speed how long pixels take to refresh, \nYou must enter a number that is AT LEAST 1",JOptionPane.INFORMATION_MESSAGE));
                 }
                 else
                 {
-                    speed = Integer.parseInt(JOptionPane.showInputDialog(null,"The speed how long pixels take to refresh\nJust enter a number greater than one",JOptionPane.INFORMATION_MESSAGE));
+                    speed = 2*Integer.parseInt(JOptionPane.showInputDialog(null,"The speed how long pixels take to refresh\nJust enter a number greater than one",JOptionPane.INFORMATION_MESSAGE));
                 }
                 isStupid = false;
             }catch (Exception e) {
@@ -317,7 +213,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
     {
         changeCellColor(24,0,72,144,0,48);
     }
-    
+
     public void changeCellColor(int r1, int g1, int b1, int r2, int g2, int b2)
     {
         rgbValues[0][0] = r1;
@@ -330,43 +226,71 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 
     public void selectAdvancedOptions()
     {
-        boolean isStupid = false;
-        String options []= {"yes", "no"};
-        String Advancedoptions []= {"cell shape", "cell color", "I'm done"};
+        boolean isStupid = false, notDone = true;
+        String Advancedoptions []= {"cell shape", "cell color", "RainbowCells!", "I'm done"};
         do{
             int AdvancedOptionChosen = JOptionPane.showOptionDialog(null,"What would you like to modifiy?","Extras!:",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,Advancedoptions,Advancedoptions[2]);
             switch(AdvancedOptionChosen)
             {
-                case 0://Cell Shape
-                options [0] = "square";
-                options [1] = "circle";
-                try{
-                    shape = JOptionPane.showOptionDialog(null,"Would you like to acess the advanced options?","Extras!:",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
-                    isStupid = false;
-                }catch (Exception e) {
-                    shape = 10;
-                    System.out.println("HOW did you get this? (Unless you just pressed cancel...)");
-                    isStupid = true;
-                }
-                if(shape == 1 && resoultion < 10)
-                {
-                    options [0] = "yes";
-                    options [1] = "no";
-                    int responce = JOptionPane.showOptionDialog(null,"Circular cells work best when the resoultion is atleast 10, would you like to change your resoultion?","Note:",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
-                    setCellSize();
-                }
+                case 0:
+                setCellShape();
                 break;
                 case 1:
-                    changeCellColor(0,0,0,0,0,0);
+                int colorChoices [] = new int [6];
+                String namesOfSlots [] = {"Alive Red", "Alive Green", "Alive Blue", "Dead Red", "Dead Green", "Dead Blue"};
+                changeCellColor(0,0,0,0,0,0);
+                for(int x = 0; x < 6; x++)
+                {
+                    do{
+                        try{
+                            colorChoices [x] = Integer.parseInt(JOptionPane.showInputDialog(null, "Set " + namesOfSlots[x] + " Value by entering a value between 0 and 255",JOptionPane.INFORMATION_MESSAGE));
+                            isStupid = false;
+                        }catch (Exception e) {
+                            System.out.println("Um");
+                            isStupid = true;
+                        }
+                    }while(isStupid);
+                    if(colorChoices [x] > 255)
+                    {
+                        colorChoices [x] = 255;
+                    }
+                    if(colorChoices [x] < 0)
+                    {
+                        colorChoices [x] = 0;
+                    }
+                }
                 break;
                 case 2:
 
+                break;
+                case 3:
+                notDone = false;
                 break;
                 default:
                 JOptionPane.showMessageDialog(null, "This feature is still being worked on", "Sorry", JOptionPane.INFORMATION_MESSAGE);
             }
 
-        }while(true);
+        }while(notDone);
+    }
+
+    public void setCellShape()
+    {
+        String options []= {"square", "circle"};
+        try{
+            shape = JOptionPane.showOptionDialog(null,"What shape would you like your cells to be?","Extras!:",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+            isStupid = false;
+        }catch (Exception e) {
+            shape = 10;
+            System.out.println("HOW did you get this? (Unless you just pressed cancel...)");
+            isStupid = true;
+        }
+        if(shape == 1 && resoultion < 10)
+        {
+            options [0] = "yes";
+            options [1] = "no";
+            int responce = JOptionPane.showOptionDialog(null,"Circular cells work best when the resoultion is atleast 10, would you like to change your resoultion?","Note:",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+            setCellSize();
+        }
     }
 
     public void clearCells()
@@ -379,6 +303,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
             }
         }
     }
+
     public class ColorPanel extends JPanel
     {
         public ColorPanel( Color back)
