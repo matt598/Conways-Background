@@ -8,7 +8,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 {
     static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     static Thread bounceThread;
-    boolean live=true, die = false, notClicking = true, isStupid = true;
+    boolean live=true, die = false, notClicking = true, isStupid = true, rainbow = false;
     static int cells [][];
     static int cellsToDie [][];
     int resoultion = 3, speed = 10, shape = 0;
@@ -23,7 +23,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
         {
             selectAdvancedOptions();
         }
-        JOptionPane.showMessageDialog(null,"Once you've drawn enough pixels on the screen press L to start","Instructions:",JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null,"Once you've drawn enough pixels on the screen press L to start\n and Q to exit","Instructions:",JOptionPane.INFORMATION_MESSAGE);
         cells = new int[screenSize.width/resoultion][screenSize.height/resoultion];
         cellsToDie = cells;
         //clearCells();
@@ -42,29 +42,44 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
     }
 
     public void run()
-
     {
         int counter = 0;
-        while(live)
+        do
         {
-            if(notClicking)
+            while(live)
             {
-                makeCellUnderMouseAlive();
+                if(notClicking)
+                {
+                    makeCellUnderMouseAlive();
+                }
+                counter++;
+                if(counter >speed && die)
+                {
+                    counter = 0;
+                    killCells();
+                    cells = cellsToDie;
+                    if(rainbow)
+                    {
+                        rainbowCells();
+                    }
+                }
+                try
+                {
+                    Thread.sleep(speed);
+                }catch (InterruptedException e) { }
+                repaint();
             }
-            counter++;
-            if(counter >speed && die)
-            {
-                counter = 0;
-                killCells();
-                cells = cellsToDie;
-            }
-            try
-            {
-                Thread.sleep(speed);
-            }catch (InterruptedException e) { }
-            repaint();
-        }
+        }while(live);
         System.exit(0);
+    }
+    boolean swapColorChange = true;
+    Random randy = new Random();
+    public void rainbowCells()
+    {
+        int red = randy.nextInt(5)-2;
+        int green = randy.nextInt(5)-2;
+        int blue = randy.nextInt(5)-2;
+        adjustCellColor(red, green, blue, -1*red, -1*green, -1*blue);
     }
 
     public void makeCellUnderMouseAlive()
@@ -111,10 +126,10 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
                 {
                     numberOfNeighbors++;
                 }
-                try{if(x < screenSize.width/resoultion -1 && y  < screenSize.height/resoultion-1 && cells[x+1][y+1] == 1)
-                    {
-                        numberOfNeighbors++;
-                    }}catch(Exception E) {System.out.println(x + ", " + y);}
+                if(x < screenSize.width/resoultion -1 && y  < screenSize.height/resoultion-1 && cells[x+1][y+1] == 1)
+                {
+                    numberOfNeighbors++;
+                }
                 if(y  < screenSize.height/resoultion-1 && cells[x][y+1] == 1)
                 {
                     numberOfNeighbors++;
@@ -153,6 +168,27 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
         {
             die = false;
         }
+        if(c == 81)//L
+        {
+            live = false;
+        }
+        /*if(c == space)
+        {
+            clearCells()
+        }*/
+        
+        /*if(c == r)//changes red
+        {
+            adjustCellColor(1, 0, 0, -1, 0, 0);
+        }
+        if(c == g)//changes green
+        {
+            adjustCellColor(0, 1, 0, 0, -1, 0);
+        }
+        if(c == b)//changes blue
+        {
+            adjustCellColor(0, 0, 1, 0, 0, -1);
+        }*/
     }
 
     public void keyReleased(KeyEvent e)
@@ -182,7 +218,7 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
                 isStupid = false;
             }catch (Exception e) {
                 resoultion = 3;
-                System.out.println("Do you read?");
+                System.out.println("Yeah... you can't really close out of this and exit the program...");
                 isStupid = true;
             }
         }while(isStupid || resoultion < 1);
@@ -222,6 +258,36 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
         rgbValues[0][1] = r2;
         rgbValues[1][1] = g2;
         rgbValues[2][1] = b2;
+        checkCellColor();
+    }
+
+    public void adjustCellColor(int r1, int g1, int b1, int r2, int g2, int b2)
+    {
+        rgbValues[0][0] += r1;
+        rgbValues[1][0] += g1;
+        rgbValues[2][0] += b1;
+        rgbValues[0][1] += r2;
+        rgbValues[1][1] += g2;
+        rgbValues[2][1] += b2;
+        checkCellColor();
+    }
+
+    public void checkCellColor()
+    {
+        for(int x = 0; x < 3; x++)
+        {
+            for(int y = 0; y < 2; y++)
+            {
+                if(rgbValues[x][y] > 254)
+                {
+                    rgbValues[x][y] = 255;
+                }
+                else if(rgbValues[x][y] < 1)
+                {
+                    rgbValues[x][y] = 0;
+                }
+            }
+        }
     }
 
     public void selectAdvancedOptions()
@@ -238,7 +304,6 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
                 case 1:
                 int colorChoices [] = new int [6];
                 String namesOfSlots [] = {"Alive Red", "Alive Green", "Alive Blue", "Dead Red", "Dead Green", "Dead Blue"};
-                changeCellColor(0,0,0,0,0,0);
                 for(int x = 0; x < 6; x++)
                 {
                     do{
@@ -259,9 +324,11 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
                         colorChoices [x] = 0;
                     }
                 }
+                changeCellColor(colorChoices[0],colorChoices[1],colorChoices[2],colorChoices[3],colorChoices[4],colorChoices[5]);
                 break;
                 case 2:
-
+                changeCellColor(127,127,127,127,127,127);
+                rainbow = true;
                 break;
                 case 3:
                 notDone = false;
@@ -313,6 +380,8 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
 
         public void paintComponent(Graphics g)
         {
+            g.setColor(new Color (255,255,255));
+            g.fillRect(0,0,screenSize.width, screenSize.height);
             switch(shape)
             {
                 default: case 0:
@@ -320,11 +389,13 @@ public class BetterLife extends JFrame implements KeyListener, Runnable
                 {
                     for(int y = 0; y< screenSize.height/resoultion; y++)
                     {
+                        checkCellColor();
                         g.setColor(new Color(rgbValues[0][0],rgbValues[1][0],rgbValues[2][0]));//living cell color
                         if(cells[x][y] == 1)
                         {
                             g.fillRect(x*resoultion,y*resoultion,1*resoultion,1*resoultion);
                         }
+                        checkCellColor();
                         g.setColor(new Color(rgbValues[0][1],rgbValues[1][1],rgbValues[2][1]));//dead cell color
                         if(cells[x][y] ==2)
                         {
